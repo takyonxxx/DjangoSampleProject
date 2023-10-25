@@ -1,0 +1,19 @@
+<!-- example_template.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Example Template</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
+    <p>You are {{ age }} years old.</p>
+
+    <h2>Your Hobbies:</h2>
+    <ul>
+        {% for hobby in hobbies %}
+            <li>{{ hobby }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
