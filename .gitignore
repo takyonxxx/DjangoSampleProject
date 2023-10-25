@@ -20,3 +20,11 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Ignore JetBrains IDE files
+.idea/
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
