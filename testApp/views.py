@@ -1,29 +1,57 @@
-import asyncio
+import operator
+import array
+import json
 import operator
 import os
 import random
-import threading
-import time
+from functools import reduce, wraps
 
+import numpy as np
+import pandas as pd
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import status
-import json
+
 from testApp.models import TestModel
 from testApp.serializers import TestModelSerializer, TestSubModelSerializer
-import array
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from functools import reduce
 
-from testApp.test_functions import Square, Circle, thread_function, test_async, mul, pretty_print
-from testApp.test_inheritance import test_inheritance, test_abstract_class
+
+def custom_http_methods(request_method_list):
+    def decorator(func):
+        @wraps(func)
+        def inner(request, *args, **kwargs):
+            if request.method not in request_method_list:
+                response = HttpResponseNotAllowed(request_method_list)
+                # You can customize the logging or any other behavior here
+                print(f"Method Not Allowed ({request.method}): {request.path}")
+                return response
+            return func(request, *args, **kwargs)
+
+        return inner
+
+    return decorator
+
+
+def my_decorator(prefix):
+    def wrapper(func):
+        def inner_wrapper():
+            print(f"{prefix}: Something is happening before the function is called.")
+            func()
+            print(f"{prefix}: Something is happening after the function is called.")
+
+        return inner_wrapper
+
+    return wrapper
+
+
+@my_decorator("INFO")
+def say_hello():
+    print("Hello!")
 
 
 @require_http_methods(['POST', 'OPTIONS'])
@@ -173,6 +201,20 @@ def test_api(request):
         heapq.heapify(my_heap)
         print("my_heap", my_heap)
 
+        import copy
+        # Sample list
+        original_list = [1, 2, [3, 4]]
+        # Shallow copy
+        shallow_copied_list = copy.copy(original_list)
+        # Deep copy
+        deep_copied_list = copy.deepcopy(original_list)
+        # Modifying the original list
+        original_list[2][0] = 'X'
+        # Displaying the results
+        print("Original List:", original_list)
+        print("Shallow Copy:", shallow_copied_list)
+        print("Deep Copy:", deep_copied_list)
+
         filename = "test_file.txt"
         lines = ["This is Delhi\n", "This is Paris\n", "This is London\n"]
         s = "Hello\n"
@@ -191,6 +233,9 @@ def test_api(request):
         string = 'hello'
         upper_string = string.upper()
         print(lower_string, upper_string)
+
+        # Calling the decorated function
+        say_hello()
 
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
