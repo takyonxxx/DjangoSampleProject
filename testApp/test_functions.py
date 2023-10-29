@@ -69,6 +69,50 @@ def calculate_weather_data():
 
     # Print the results
     print(future_data)
+    #
+    # # Create sample data LinearRegression
+    # X = np.array([1, 2, 3, 4, 5]).reshape(-1, 1)  # Independent variable
+    # y = np.array([2, 4, 5, 4, 5])  # Dependent variable
+    #
+    # # Create a LinearRegression model
+    # model = LinearRegression()
+    # model.fit(X, y)
+    #
+    # # Make predictions using the model
+    # new_data_point = np.array([6]).reshape(-1, 1)
+    # predicted_value = model.predict(new_data_point)
+    #
+    # # Print the predicted value, tahmin edilen
+    # print("Predicted value:", predicted_value)
+    #
+    # # Create sample data Logistic Regression
+    # X = np.array([50, 55, 60, 65, 70, 75, 80, 85, 90, 95]).reshape(-1, 1)  # Exam scores
+    # y = np.array([0, 0, 0, 0, 1, 1, 1, 1, 1, 1])  # Pass status (0: Fail, 1: Pass)
+    #
+    # # Create a Logistic Regression model
+    # model = LogisticRegression()
+    # model.fit(X, y)
+    #
+    # # Make predictions using the model
+    # new_data_point = np.array([72]).reshape(-1, 1)
+    # predicted_prob = model.predict_proba(new_data_point)
+    #
+    # # Print the predicted probability of passing
+    # print("Predicted probability of passing:", predicted_prob[0][1])
+    #
+    # # Create a NumPy array returns the indices that would sort the array
+    # arr = np.array([10, 5, 8, 20, 3, 15, 7])
+    # # Specify the number of maximum values you want (N)
+    # N = 3
+    # # Get indices of N maximum values
+    # indices_of_max_values = np.argsort(arr)[-N:]
+    # indices_of_min_values = np.argsort(arr)[:N]
+    # # Print the result
+    # print(
+    #     "Indices of the {} maximum/minimum values: {} / {}".format(N, indices_of_max_values, indices_of_min_values))
+    # a = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    # p = np.percentile(a, 25)  # Returns the 50th percentile which is also the median
+    # print(p)
 
 
 # tersten okunması aynı
