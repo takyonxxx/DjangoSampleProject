@@ -212,7 +212,8 @@ def test_api(request):
         raise ValueError('Method not allowed.')
 
 
-"""Python Global Interpreter Lock (GIL), Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
+"""Python Global Interpreter Lock (GIL) Global Yorumlayıcı Kilidi",
+Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
 GIL, aynı anda birden fazla yerel iş parçacığının Python bytecod'larını çalıştırmasını önleyen bir kilittir. Bu 
 kilitleme, CPython'un bellek yönetimi konusunda iş parçacıkları arasında güvenli olmadığı için gereklidir. CPython, 
 Python programlama dilinin referans uygulamasıdır. Python dilinin tasarımını ve standart kütüphanesini belirleyen ve 
