@@ -60,38 +60,6 @@ def test_api(request):
     if request.method == 'POST':
         demo_list = [5, 4, 4, 6, 8, 12, 12, 1, 5]
 
-        # iterate over the generator object produced by my_generator
-        # for value in test_generator(3):
-        #     # print each value produced by generator
-
-        # x = threading.Thread(target=thread_function, args=(1,))
-        # x.start()
-        #
-        # s = time.perf_counter()
-        # asyncio.run(test_async())
-        # elapsed = time.perf_counter() - s
-        # print(f"Async executed in {elapsed:0.2f} seconds.")
-
-        # numpy allow vector and matrix operations
-        a = np.arange(15).reshape(3, 5)
-        b = np.array([[1, 2], [3, 4]], dtype=complex)
-        # load data into a DataFrame object:
-        data = {
-            "calories": [420, 380, 390],
-            "duration": [50, 40, 45]
-        }
-        data_frame1 = pd.DataFrame(data)
-        data = {
-            "calories": [None, None, 39430],
-            "duration": [530, None, 32]
-        }
-        data_frame2 = pd.DataFrame(data)
-        merged_dataframe = pd.concat([data_frame1, data_frame2], ignore_index=True)
-        # print(merged_dataframe.loc[1])  # second line information
-        missing_count = merged_dataframe.isnull().sum()
-        merged_dataframe['calories'] = merged_dataframe['calories'].fillna(0)
-        merged_dataframe['duration'] = merged_dataframe['duration'].fillna(0)
-
         # ternary operator, conditional statements
         x, y = 10, 20
         count = x if x < y else y
@@ -110,8 +78,10 @@ def test_api(request):
         # print(13 // 3)
 
         output_list = list(map(lambda x: x ** 2, demo_list))
-        output_list = list(filter(lambda x: (x > 0 and x % 2 == 0), demo_list))
-        output_list = list(filter(lambda x: x > 6, range(9)))
+        output_list_even = list(filter(lambda x: (x > 0 and x % 2 == 0), demo_list))  # even number
+        output_list_odd = list(filter(lambda x: (x > 0 and x % 2 != 0), demo_list))  # odd number
+        print('even', output_list_even, 'odd', output_list_odd)
+        output_list = list(filter(lambda x: x > 6, range(9)))  # [7, 8]
 
         squared_list = [x ** 2 for x in demo_list]  # list comprehension
         squared_dict = {x: x ** 2 for x in demo_list}  # dict comprehension
@@ -236,11 +206,25 @@ def test_api(request):
 
         # Calling the decorated function
         say_hello()
-
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
     else:
         raise ValueError('Method not allowed.')
+
+
+"""Python Global Interpreter Lock (GIL), Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
+GIL, aynı anda birden fazla yerel iş parçacığının Python bytecod'larını çalıştırmasını önleyen bir kilittir. Bu 
+kilitleme, CPython'un bellek yönetimi konusunda iş parçacıkları arasında güvenli olmadığı için gereklidir. CPython, 
+Python programlama dilinin referans uygulamasıdır. Python dilinin tasarımını ve standart kütüphanesini belirleyen ve 
+geliştiren uygulamadır. "C" harfi, CPython'ın Python yorumlayıcısının büyük ölçüde C programlama diliyle yazıldığı 
+anlamına gelir."""
+
+"""The GIL is a mutex (short for mutual exclusion) that protects access to Python objects, preventing multiple native 
+threads from executing Python bytecodes at once.
+Birden fazla yerel iş parçacığın Python bayt kodlarını çalıştırmasını engelleyen bir mekanizmadır."""
+
+"""CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
+mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
 
 
 def example_view(request):

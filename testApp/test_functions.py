@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 from sklearn.linear_model import LinearRegression
 
-
 # MVC Tasarım Deseni (Model-View-Controller)
 # ORM (Object-Relational Mapping)
 # Admin Paneli:
@@ -22,6 +21,70 @@ from sklearn.linear_model import LinearRegression
 # CRUD Create, Read, Update, and Delete
 # Django ORM is a database abstraction API
 
+
+"""Python Global Interpreter Lock (GIL), Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
+GIL, aynı anda birden fazla yerel iş parçacığının Python bytecod'larını çalıştırmasını önleyen bir kilittir. Bu 
+kilitleme, CPython'un bellek yönetimi konusunda iş parçacıkları arasında güvenli olmadığı için gereklidir. CPython, 
+Python programlama dilinin referans uygulamasıdır. Python dilinin tasarımını ve standart kütüphanesini belirleyen ve 
+geliştiren uygulamadır. "C" harfi, CPython'ın Python yorumlayıcısının büyük ölçüde C programlama diliyle yazıldığı 
+anlamına gelir."""
+
+"""CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
+mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
+
+
+def test_garbage_collector():
+    import gc
+    import resource
+    import time
+
+    class Person:
+        def __init__(self, name):
+            self.name = name
+            self.friend = None
+
+    # Create instances of Person with circular references
+    # Döngüsel referans oluştur
+    person1 = Person("Alice")
+    person2 = Person("Bob")
+    person1.friend = person2
+    person2.friend = person1
+
+    # Get the current memory usage
+    before_memory = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    # Run the Garbage Collector
+    gc.collect()
+    # Give the Garbage Collector some time to work
+    time.sleep(1)
+    # Get the memory usage after garbage collection
+    after_memory = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+    # Check if there is any change in memory usage
+    if before_memory == after_memory:
+        print("No memory freed by the Garbage Collector.")
+    else:
+        print("Memory freed by the Garbage Collector.")
+
+
+# numpy allow vector and matrix operations
+#        a = np.arange(15).reshape(3, 5)
+#        b = np.array([[1, 2], [3, 4]], dtype=complex)
+#        # load data into a DataFrame object:
+#        data = {
+#            "calories": [420, 380, 390],
+#            "duration": [50, 40, 45]
+#        }
+#        data_frame1 = pd.DataFrame(data)
+#        data = {
+#            "calories": [None, None, 39430],
+#            "duration": [530, None, 32]
+#        }
+#        data_frame2 = pd.DataFrame(data)
+#        merged_dataframe = pd.concat([data_frame1, data_frame2], ignore_index=True)
+#        # print(merged_dataframe.loc[1])  # second line information
+#        missing_count = merged_dataframe.isnull().sum()
+#        merged_dataframe['calories'] = merged_dataframe['calories'].fillna(0)
+#        merged_dataframe['duration'] = merged_dataframe['duration'].fillna(0)
 def calculate_weather_data():
     # Replace 'YOUR_API_KEY' with your actual OpenWeatherMap API key
     api_key = 'YOUR_API_KEY'
@@ -214,6 +277,8 @@ class Process(multiprocessing.Process):
         print("I'm the process with id: {}".format(self.id))
 
 
+# x = threading.Thread(target=thread_function, args=(1,))
+# x.start()
 def thread_function(name):
     print(f"Thread {name}: starting")
     time.sleep(2)
@@ -230,6 +295,10 @@ async def async_test2():
     await asyncio.sleep(1)
 
 
+# s = time.perf_counter()
+# asyncio.run(test_async())
+# elapsed = time.perf_counter() - s
+# print(f"Async executed in {elapsed:0.2f} seconds.")
 async def test_async():
     await asyncio.gather(async_test1(), async_test2())
 
