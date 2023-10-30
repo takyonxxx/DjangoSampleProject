@@ -3,9 +3,11 @@ import multiprocessing
 import time
 from math import pi
 
+import numpy as np
 import pandas as pd
 import requests
 from sklearn.linear_model import LinearRegression
+from multiprocessing import Pool
 
 # MVC Tasarım Deseni (Model-View-Controller)
 # ORM (Object-Relational Mapping)
@@ -31,6 +33,23 @@ anlamına gelir."""
 
 """CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
 mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
+
+
+def test_multiprocessing():
+    count = 50000000
+
+    def countdown(n):
+        while n > 0:
+            n -= 1
+
+    pool = Pool(processes=2)
+    start = time.time()
+    r1 = pool.apply_async(countdown, [count // 2])
+    r2 = pool.apply_async(countdown, [count // 2])
+    pool.close()
+    pool.join()
+    end = time.time()
+    print('Time taken for test_multiprocessing, in seconds - {:.2f}'.format(end - start))
 
 
 def test_garbage_collector():
@@ -66,25 +85,28 @@ def test_garbage_collector():
         print("Memory freed by the Garbage Collector.")
 
 
-# numpy allow vector and matrix operations
-#        a = np.arange(15).reshape(3, 5)
-#        b = np.array([[1, 2], [3, 4]], dtype=complex)
-#        # load data into a DataFrame object:
-#        data = {
-#            "calories": [420, 380, 390],
-#            "duration": [50, 40, 45]
-#        }
-#        data_frame1 = pd.DataFrame(data)
-#        data = {
-#            "calories": [None, None, 39430],
-#            "duration": [530, None, 32]
-#        }
-#        data_frame2 = pd.DataFrame(data)
-#        merged_dataframe = pd.concat([data_frame1, data_frame2], ignore_index=True)
-#        # print(merged_dataframe.loc[1])  # second line information
-#        missing_count = merged_dataframe.isnull().sum()
-#        merged_dataframe['calories'] = merged_dataframe['calories'].fillna(0)
-#        merged_dataframe['duration'] = merged_dataframe['duration'].fillna(0)
+def test_numpy():
+    # numpy allow vector and matrix operations
+    a = np.arange(15).reshape(3, 5)
+    b = np.array([[1, 2], [3, 4]], dtype=complex)
+    # load data into a DataFrame object:
+    data = {
+        "calories": [420, 380, 390],
+        "duration": [50, 40, 45]
+    }
+    data_frame1 = pd.DataFrame(data)
+    data = {
+        "calories": [None, None, 39430],
+        "duration": [530, None, 32]
+    }
+    data_frame2 = pd.DataFrame(data)
+    merged_dataframe = pd.concat([data_frame1, data_frame2], ignore_index=True)
+    # print(merged_dataframe.loc[1])  # second line information
+    missing_count = merged_dataframe.isnull().sum()
+    merged_dataframe['calories'] = merged_dataframe['calories'].fillna(0)
+    merged_dataframe['duration'] = merged_dataframe['duration'].fillna(0)
+
+
 def calculate_weather_data():
     # Replace 'YOUR_API_KEY' with your actual OpenWeatherMap API key
     api_key = 'YOUR_API_KEY'
@@ -201,7 +223,7 @@ def bubble_sort(arr):
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
 
 
-def Star_triangle(n):
+def star_triangle(n):
     for x in range(n):
         print(' ' * (n - x - 1) + '*' * (2 * x + 1))
 
@@ -229,42 +251,6 @@ def is_prime(number):
             if number % i == 0:
                 return False
         return True
-
-
-# Self is an object or an instance of a class.
-class Shape:
-    def __init__(self, name):
-        self.name = name
-
-    def area(self):
-        pass
-
-    def fact(self):
-        return "I am a two-dimensional shape."
-
-    def __str__(self):
-        return self.name
-
-
-class Square(Shape):
-    def __init__(self, length):
-        super().__init__("Square")
-        self.length = length
-
-    def area(self):
-        return self.length ** 2
-
-    def fact(self):
-        return "Squares have each angle equal to 90 degrees."
-
-
-class Circle(Shape):
-    def __init__(self, radius):
-        super().__init__("Circle")
-        self.radius = radius
-
-    def area(self):
-        return pi * self.radius ** 2
 
 
 class Process(multiprocessing.Process):
@@ -314,12 +300,12 @@ def test_generator(n):
         val += 1
 
 
-def mul(*args):
+def test_args(*args):
     print(args[0] * args[1])
     for name in args:
         print(f"Hello, {name}")
 
 
-def pretty_print(**kwargs):
+def test_kwargs(**kwargs):
     for key, value in kwargs.items():
         print(f"{key}: {value}")

@@ -19,6 +19,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from testApp.models import TestModel
 from testApp.serializers import TestModelSerializer, TestSubModelSerializer
+from testApp.test_functions import test_multiprocessing
 
 
 def custom_http_methods(request_method_list):
@@ -206,6 +207,7 @@ def test_api(request):
 
         # Calling the decorated function
         say_hello()
+        test_multiprocessing()
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
     else:
