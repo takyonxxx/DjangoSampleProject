@@ -62,7 +62,7 @@ def test_db(request):
 
     if request.method == 'POST':
         with transaction.atomic(using='test_db'):
-            posts = TestModel.objects.select_for_update().\
+            posts = TestModel.objects.select_for_update(). \
                 filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
             sub_models = TestSubModel.objects.all()
 
@@ -113,7 +113,45 @@ def test_db(request):
 @require_http_methods(['POST', 'OPTIONS'])
 @csrf_exempt
 def test_api(request):
+    if __name__ == "__main__":
+        print("This is the main block of code.")
+    else:
+        print("This is not the main block of code.")
+
     if request.method == 'POST':
+
+        import heapq
+        my_heap = [3, 1, 4, 1, 5, 9, 2]
+        heapq.heapify(my_heap)
+        print("my_heap", my_heap)
+
+        import copy
+        # Sample list
+        original_list = [1, 2, [3, 4]]
+        # Shallow copy
+        shallow_copied_list = copy.copy(original_list)
+        # Deep copy
+        deep_copied_list = copy.deepcopy(original_list)
+        # Modifying the original list
+        original_list[2][0] = 'X'
+        # Displaying the results
+        print("Original List:", original_list)
+        print("Shallow Copy:", shallow_copied_list)
+        print("Deep Copy:", deep_copied_list)
+
+        filename = "test_file.txt"
+        lines = ["This is Delhi\n", "This is Paris\n", "This is London\n"]
+        s = "Hello\n"
+        with open(filename, "w") as file:
+            file.write(s)
+            file.writelines(lines)
+        with open(filename, "r") as file:
+            # Move the file cursor back to the beginning
+            file.seek(0)
+            for i, line in enumerate(file):
+                pass
+        os.remove(filename)
+
         demo_list = [5, 4, 4, 6, 8, 12, 12, 1, 5]
 
         # ternary operator, conditional statements
@@ -222,50 +260,15 @@ def test_api(request):
         are_disjoint = my_set.isdisjoint({11, 12, 13})
         print("Are my_set and {11, 12, 13} disjoint?", are_disjoint)
 
-        import heapq
-        my_heap = [3, 1, 4, 1, 5, 9, 2]
-        heapq.heapify(my_heap)
-        print("my_heap", my_heap)
-
-        import copy
-        # Sample list
-        original_list = [1, 2, [3, 4]]
-        # Shallow copy
-        shallow_copied_list = copy.copy(original_list)
-        # Deep copy
-        deep_copied_list = copy.deepcopy(original_list)
-        # Modifying the original list
-        original_list[2][0] = 'X'
-        # Displaying the results
-        print("Original List:", original_list)
-        print("Shallow Copy:", shallow_copied_list)
-        print("Deep Copy:", deep_copied_list)
-
-        filename = "test_file.txt"
-        lines = ["This is Delhi\n", "This is Paris\n", "This is London\n"]
-        s = "Hello\n"
-        with open(filename, "w") as file:
-            file.write(s)
-            file.writelines(lines)
-        with open(filename, "r") as file:
-            # Move the file cursor back to the beginning
-            file.seek(0)
-            for i, line in enumerate(file):
-                pass
-        os.remove(filename)
-
-        char = 'HELLO'
-        lower_string = char.lower()
-        string = 'hello'
-        upper_string = string.upper()
-        print(lower_string, upper_string)
-
-        # Calling the decorated function
         say_hello()
-        test_multiprocessing()
+        # for i, val in enumerate(demo_list, start=2):
+        #     print(i, val)
 
-        for i, val in enumerate(demo_list, start=2):
-            print(i, val)
+        obj = TestModel()
+        class_name_from_obj = obj.__class__.__name__
+        class_name = TestModel.__name__
+        print(class_name, class_name_from_obj)  # class ismi
+        print(__name__)  # modül ismi
 
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
@@ -291,6 +294,16 @@ birçok durumda yeterince hızlı yapar. GIL'in devam eden kullanımı, performa
 
 """CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
 mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
+
+"""PEP 8, Python Enhancement Proposal 8'in kısaltmasıdır. Python programlama dilinde kod yazımı için belirlenmiş bir 
+stil rehberidir."""
+
+"""CamelCase: myVariableName
+snake_case: my_variable_name"""
+
+"""python -m venv venv
+ venv\Scripts\activate
+ venv/bin/activate"""
 
 
 def example_view(request):
