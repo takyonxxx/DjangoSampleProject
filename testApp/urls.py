@@ -20,6 +20,7 @@ from testApp.views import example_view
 
 urlpatterns = [
     path('test_api/', views.test_api, name='test_api'),
+    path('test_db/', views.test_db, name='test_db'),
     path('get_test_models/', views.get_test_models, name='get_test_models'),
     path('get_test_model_by_sub_model_name/', views.get_test_model_by_sub_model_name,
          name='get_test_model_by_sub_model_name'),

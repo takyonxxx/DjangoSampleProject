@@ -1,4 +1,3 @@
-import operator
 import array
 import json
 import operator
@@ -6,10 +5,10 @@ import os
 import random
 from functools import reduce, wraps
 
-import numpy as np
-import pandas as pd
-from django.db import transaction
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.core.serializers import serialize
+from django.db import transaction, connection
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -53,6 +52,22 @@ def my_decorator(prefix):
 @my_decorator("INFO")
 def say_hello():
     print("Hello!")
+
+
+@require_http_methods(['POST', 'OPTIONS'])
+@csrf_exempt
+def test_db(request):
+    if request.method == 'POST':
+
+        posts = TestModel.objects.filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
+        _q = posts.query
+        _c = connection.queries
+        serialized_posts = serialize('json', posts)
+        return HttpResponse(content=serialized_posts, content_type='application/json')
+        # Return the serialized data as JsonResponse
+        # return JsonResponse({'result': serialized_posts}, safe=False)
+    else:
+        raise ValueError('Method not allowed.')
 
 
 @require_http_methods(['POST', 'OPTIONS'])
@@ -208,6 +223,10 @@ def test_api(request):
         # Calling the decorated function
         say_hello()
         test_multiprocessing()
+
+        for i, val in enumerate(demo_list, start=2):
+            print(i, val)
+
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
     else:
@@ -225,6 +244,10 @@ anlamına gelir."""
 """The GIL is a mutex (short for mutual exclusion) that protects access to Python objects, preventing multiple native 
 threads from executing Python bytecodes at once.
 Birden fazla yerel iş parçacığın Python bayt kodlarını çalıştırmasını engelleyen bir mekanizmadır."""
+"""GIL, tek bir iş parçacığı üzerindeki işlemleri sıralı hale getirir, bu da bazı çoklu çekirdekli sistemlerde 
+performans sorunlarına yol açabilir. Ancak, tek iş parçacığı üzerindeki işlemleri basitleştirir ve bu da CPython'ı 
+birçok durumda yeterince hızlı yapar. GIL'in devam eden kullanımı, performans ve uyumluluk arasında bir denge kurma 
+çabasının bir sonucu olarak görülebilir."""
 
 """CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
 mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
