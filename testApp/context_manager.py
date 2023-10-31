@@ -1,5 +1,7 @@
 import sqlite3
 
+from django.db import transaction
+
 
 class MyFileManager:
     def __init__(self, filename, mode):

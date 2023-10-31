@@ -31,7 +31,7 @@ class TestModelSerializer(serializers.ModelSerializer):
             'age': data.get('age'),
             'sub_model': data.get('sub_model'),
             'sub_model_name': data.get('sub_model_name'),
-            'additional_info': "come from to_representation",
+            'additional_info': "",
         }
         return custom_data
 

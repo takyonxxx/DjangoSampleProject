@@ -16,7 +16,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from testApp.models import TestModel
+from testApp.models import TestModel, TestSubModel
 from testApp.serializers import TestModelSerializer, TestSubModelSerializer
 from testApp.test_functions import test_multiprocessing
 
@@ -57,15 +57,39 @@ def say_hello():
 @require_http_methods(['POST', 'OPTIONS'])
 @csrf_exempt
 def test_db(request):
-    if request.method == 'POST':
+    def email_user():
+        print(f"Dear User, Thank You.")
 
-        posts = TestModel.objects.filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
-        _q = posts.query
-        _c = connection.queries
-        serialized_posts = serialize('json', posts)
-        return HttpResponse(content=serialized_posts, content_type='application/json')
-        # Return the serialized data as JsonResponse
-        # return JsonResponse({'result': serialized_posts}, safe=False)
+    if request.method == 'POST':
+        with transaction.atomic(using='test_db'):
+            posts = TestModel.objects.filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
+            sub_models = TestSubModel.objects.all()
+
+            for post in posts:
+                if post.name.startswith('Türk'):
+                    post.name = 'Gökhan Biliyor'
+                    post.age = 47
+                    post.sub_model = sub_models.get(id=2)
+                elif post.name.startswith('Gök'):
+                    post.name = 'Türkay Biliyor'
+                    post.age = 49
+                    post.sub_model = sub_models.get(id=1)
+                post.save()
+                # Serialize each post separately
+
+            # Serialize all posts at once
+            serialized_posts = TestModelSerializer(posts, many=True).data
+
+            _q = posts.query
+            _c = connection.queries
+        if serialized_posts:
+            transaction.on_commit(email_user)
+            for item in serialized_posts:
+                # Modify the additional_info field for each object
+                item['additional_info'] = "Mail has been sent to user."
+            return JsonResponse(serialized_posts, safe=False)  # non dict object --> safe=False
+        else:
+            return JsonResponse({'error': 'No data to serialize.'}, status=400)
     else:
         raise ValueError('Method not allowed.')
 
