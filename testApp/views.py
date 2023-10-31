@@ -3,7 +3,7 @@ import json
 import operator
 import os
 import random
-from functools import reduce, wraps
+from functools import reduce, wraps, partial
 
 from django.core.serializers import serialize
 from django.db import transaction, connection
@@ -57,12 +57,13 @@ def say_hello():
 @require_http_methods(['POST', 'OPTIONS'])
 @csrf_exempt
 def test_db(request):
-    def email_user():
-        print(f"Dear User, Thank You.")
+    def email_user(email):
+        print(f"Dear {email}, Thank You.")
 
     if request.method == 'POST':
         with transaction.atomic(using='test_db'):
-            posts = TestModel.objects.filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
+            posts = TestModel.objects.select_for_update().\
+                filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
             sub_models = TestSubModel.objects.all()
 
             for post in posts:
@@ -83,10 +84,11 @@ def test_db(request):
             _q = posts.query
             _c = connection.queries
         if serialized_posts:
-            transaction.on_commit(email_user)
+            partial_email_user = partial(email_user, "turkaybiliyor@hotmail.com")
+            transaction.on_commit(partial_email_user)
             for item in serialized_posts:
                 # Modify the additional_info field for each object
-                item['additional_info'] = "Mail has been sent to user."
+                item['additional_info'] = "Mail has been sent to turkaybiliyor@hotmail.com."
             return JsonResponse(serialized_posts, safe=False)  # non dict object --> safe=False
         else:
             return JsonResponse({'error': 'No data to serialize.'}, status=400)
