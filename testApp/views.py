@@ -66,6 +66,20 @@ def test_db(request):
                 filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
             sub_models = TestSubModel.objects.all()
 
+            # Fetch a queryset of TestModel instances with related TestSubModel instances
+            test_models_with_related = TestModel.objects.select_related('sub_model').filter(name__startswith='Türk')
+
+            # Now you can iterate over the queryset and access related objects without additional queries
+            for test_model_instance in test_models_with_related:
+                print("TestModel Name:", test_model_instance.name)
+                print("TestModel Age:", test_model_instance.age)
+
+                # Accessing the related TestSubModel instance without triggering additional queries
+                if test_model_instance.sub_model:
+                    print("Related TestSubModel Name:", test_model_instance.sub_model.name)
+                else:
+                    print("No related TestSubModel")
+
             for post in posts:
                 if post.name.startswith('Türk'):
                     post.name = 'Gökhan Biliyor'
