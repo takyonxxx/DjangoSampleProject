@@ -1,15 +1,13 @@
 import asyncio
 import multiprocessing
-import time
 from functools import wraps
-from math import pi
+from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
 import requests
 from django.http import HttpResponseNotAllowed
 from sklearn.linear_model import LinearRegression
-from multiprocessing import Pool
 
 # MVC Tasarım Deseni (Model-View-Controller)
 # ORM (Object-Relational Mapping)
@@ -25,16 +23,43 @@ from multiprocessing import Pool
 # CRUD Create, Read, Update, and Delete
 # Django ORM is a database abstraction API
 
+from celery import Celery
+import time
 
-"""Python Global Interpreter Lock (GIL), Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
-GIL, aynı anda birden fazla yerel iş parçacığının Python bytecod'larını çalıştırmasını önleyen bir kilittir. Bu 
-kilitleme, CPython'un bellek yönetimi konusunda iş parçacıkları arasında güvenli olmadığı için gereklidir. CPython, 
-Python programlama dilinin referans uygulamasıdır. Python dilinin tasarımını ve standart kütüphanesini belirleyen ve 
-geliştiren uygulamadır. "C" harfi, CPython'ın Python yorumlayıcısının büyük ölçüde C programlama diliyle yazıldığı 
-anlamına gelir."""
 
-"""CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
-mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
+# Example usage celery:
+# celery_math = CeleryMath()
+# result = celery_math.run_task(4, 4)
+# print(f"Result: {result}")
+class CeleryMath:
+    def __init__(self, broker_url='pyamqp://guest:guest@localhost//', app_name='celery_example'):
+        self.celery = Celery(app_name, broker=broker_url)
+        self.celery.task(bind=True)(self.MathTask.run)
+
+    class MathTask:
+        @staticmethod
+        def run(x, y):
+            print(f"Adding {x} + {y}")
+            time.sleep(5)  # Simulating a time-consuming task
+            return x + y
+
+    def run_task(self, x, y):
+        result = self.celery.send_task('celery_example.CeleryMath.MathTask.run', args=[x, y])
+        print("Task enqueued, waiting for result...")
+        return result.get()
+
+
+def custom_exception_decorator(func):
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except Exception as e:
+            print(f"Exception caught: {e}")
+            # You can add custom handling or logging here
+        else:
+            return result
+
+    return wrapper
 
 
 def custom_http_methods(request_method_list):
@@ -51,18 +76,6 @@ def custom_http_methods(request_method_list):
         return inner
 
     return decorator
-
-
-def my_decorator(prefix):
-    def wrapper(func):
-        def inner_wrapper():
-            print(f"{prefix}: Something is happening before the function is called.")
-            func()
-            print(f"{prefix}: Something is happening after the function is called.")
-
-        return inner_wrapper
-
-    return wrapper
 
 
 def test_multiprocessing():

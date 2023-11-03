@@ -3,11 +3,13 @@ import json
 import operator
 import os
 import random
-from functools import reduce, wraps, partial
+import unittest
+from functools import reduce, partial
 
+import requests
 from django.db import transaction, connection
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -17,10 +19,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from testApp.models import TestModel, TestSubModel
 from testApp.serializers import TestModelSerializer, TestSubModelSerializer
-import unittest
-import requests
-
-from testApp.test_functions import my_decorator
+from testApp.test_functions import custom_exception_decorator
 
 
 class TestAPIRequests(unittest.TestCase):
@@ -44,56 +43,6 @@ def run_test_api_requests():
     unittest.TextTestRunner().run(suite)
 
 
-# celery_example.py
-# celery_example.py
-# celery_example.py
-
-from celery import Celery
-import time
-
-
-class CeleryMath:
-    def __init__(self, broker_url='pyamqp://guest:guest@localhost//', app_name='celery_example'):
-        self.celery = Celery(app_name, broker=broker_url)
-        self.celery.task(bind=True)(self.MathTask.run)
-
-    class MathTask:
-        @staticmethod
-        def run(x, y):
-            print(f"Adding {x} + {y}")
-            time.sleep(5)  # Simulating a time-consuming task
-            return x + y
-
-    def run_task(self, x, y):
-        result = self.celery.send_task('celery_example.CeleryMath.MathTask.run', args=[x, y])
-        print("Task enqueued, waiting for result...")
-        return result.get()
-
-
-def custom_exception_decorator(func):
-    def wrapper(*args, **kwargs):
-        try:
-            result = func(*args, **kwargs)
-        except Exception as e:
-            print(f"Exception caught: {e}")
-            # You can add custom handling or logging here
-        else:
-            return result
-
-    return wrapper
-
-
-@custom_exception_decorator
-def exception_function(x, y):
-    result = x / y
-    return result
-
-
-@my_decorator("INFO")
-def say_hello():
-    print("Hello!")
-
-
 def handle_attribute_error(class_or_method):
     if isinstance(class_or_method, type):  # If it's a class
         for name, value in vars(class_or_method).items():
@@ -101,12 +50,13 @@ def handle_attribute_error(class_or_method):
                 setattr(class_or_method, name, handle_attribute_error(value))
         return class_or_method
     else:  # If it's a method
-        def wrapper(*args, **kwargs):
+        def decorated_method(*args, **kwargs):
             try:
                 return class_or_method(*args, **kwargs)
             except AttributeError as e:
                 print(f"AttributeError: {e}")
-        return wrapper
+
+        return decorated_method
 
 
 @handle_attribute_error
@@ -120,11 +70,13 @@ class MyBaseClass:
         self.kwargs = kwargs
 
 
+@custom_exception_decorator
 @handle_attribute_error
 class MyChildClass(MyBaseClass):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         print(self.undefined_attribute)
+        print(1 / 0)
         # Additional initialization for the child class if needed ...
 
 
@@ -334,10 +286,6 @@ def test_api(request):
         are_disjoint = my_set.isdisjoint({11, 12, 13})
         print("Are my_set and {11, 12, 13} disjoint?", are_disjoint)
 
-        say_hello()
-        # for i, val in enumerate(demo_list, start=2):
-        #     print(i, val)
-
         obj = TestModel.objects.get(id=1)
         class_name_from_obj = obj.__class__.__name__
         class_name = TestModel.__name__
@@ -346,14 +294,7 @@ def test_api(request):
         print(obj)  # return __str__ magic function
 
         # Call run_test_api_requests to execute a specific test method
-        # run_test_api_requests()
-
-        # Example usage celery:
-        # celery_math = CeleryMath()
-        # result = celery_math.run_task(4, 4)
-        # print(f"Result: {result}")
-
-        result = exception_function(10, 0)
+        run_test_api_requests()
 
         base_instance = MyBaseClass(instance='Base_Instance', age=25)
         print("Instance:", base_instance.instance)
