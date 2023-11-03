@@ -94,6 +94,40 @@ def say_hello():
     print("Hello!")
 
 
+def handle_attribute_error(class_or_method):
+    if isinstance(class_or_method, type):  # If it's a class
+        for name, value in vars(class_or_method).items():
+            if callable(value):
+                setattr(class_or_method, name, handle_attribute_error(value))
+        return class_or_method
+    else:  # If it's a method
+        def wrapper(*args, **kwargs):
+            try:
+                return class_or_method(*args, **kwargs)
+            except AttributeError as e:
+                print(f"AttributeError: {e}")
+        return wrapper
+
+
+@handle_attribute_error
+class MyBaseClass:
+    instance = None
+
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.get('name', None)
+        self.instance = kwargs.get('instance', None)
+        self.args = args
+        self.kwargs = kwargs
+
+
+@handle_attribute_error
+class MyChildClass(MyBaseClass):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print(self.undefined_attribute)
+        # Additional initialization for the child class if needed ...
+
+
 @require_http_methods(['POST', 'OPTIONS'])
 @csrf_exempt
 def test_db(request):
@@ -320,20 +354,6 @@ def test_api(request):
         # print(f"Result: {result}")
 
         result = exception_function(10, 0)
-
-        class MyBaseClass:
-            instance = None
-
-            def __init__(self, *args, **kwargs):
-                self.name = kwargs.get('name', None)
-                self.instance = kwargs.get('instance', None)
-                self.args = args
-                self.kwargs = kwargs
-
-        class MyChildClass(MyBaseClass):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                # Additional initialization for the child class if needed ...
 
         base_instance = MyBaseClass(instance='Base_Instance', age=25)
         print("Instance:", base_instance.instance)
