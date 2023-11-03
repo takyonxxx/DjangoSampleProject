@@ -48,13 +48,17 @@ def handle_attribute_error(class_or_method):
         for name, value in vars(class_or_method).items():
             if callable(value):
                 setattr(class_or_method, name, handle_attribute_error(value))
+            elif isinstance(value, type):  # If it's a nested class
+                setattr(class_or_method, name, handle_attribute_error(value))
         return class_or_method
     else:  # If it's a method
         def decorated_method(*args, **kwargs):
+            if 'username' not in kwargs or 'password' not in kwargs:
+                raise AttributeError("Both 'username' and 'password' must be provided.")
             try:
                 return class_or_method(*args, **kwargs)
             except AttributeError as e:
-                print(f"AttributeError: {e}")
+                raise e  # Re-raise the original AttributeError for other attributes
 
         return decorated_method
 
@@ -64,20 +68,18 @@ class MyBaseClass:
     instance = None
 
     def __init__(self, *args, **kwargs):
-        self.name = kwargs.get('name', None)
         self.instance = kwargs.get('instance', None)
+        # self.test = kwargs['test']
+        self.username = kwargs.get('username', None)
+        self.password = kwargs.get('password', None)
         self.args = args
         self.kwargs = kwargs
 
 
-@custom_exception_decorator
-@handle_attribute_error
+# @custom_exception_decorator
 class MyChildClass(MyBaseClass):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print(self.undefined_attribute)
-        print(1 / 0)
-        # Additional initialization for the child class if needed ...
 
 
 @require_http_methods(['POST', 'OPTIONS'])
@@ -294,13 +296,15 @@ def test_api(request):
         print(obj)  # return __str__ magic function
 
         # Call run_test_api_requests to execute a specific test method
-        run_test_api_requests()
+        # run_test_api_requests()
 
-        base_instance = MyBaseClass(instance='Base_Instance', age=25)
-        print("Instance:", base_instance.instance)
+        base_instance = MyBaseClass(instance='Base_Instance',
+                                    username="username", password="password")
+        print("Base:", base_instance.username)
 
-        child_instance = MyChildClass(name='Alice', age=30)
-        print("Instance:", child_instance.instance)
+        child_instance = MyChildClass(instance='Child_Instance',
+                                      username="child_username", password="child_password")
+        print("Child:", child_instance.username)
 
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
