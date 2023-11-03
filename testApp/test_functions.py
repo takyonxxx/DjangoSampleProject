@@ -1,11 +1,13 @@
 import asyncio
 import multiprocessing
 import time
+from functools import wraps
 from math import pi
 
 import numpy as np
 import pandas as pd
 import requests
+from django.http import HttpResponseNotAllowed
 from sklearn.linear_model import LinearRegression
 from multiprocessing import Pool
 
@@ -33,6 +35,34 @@ anlamına gelir."""
 
 """CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
 mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
+
+
+def custom_http_methods(request_method_list):
+    def decorator(func):
+        @wraps(func)
+        def inner(request, *args, **kwargs):
+            if request.method not in request_method_list:
+                response = HttpResponseNotAllowed(request_method_list)
+                # You can customize the logging or any other behavior here
+                print(f"Method Not Allowed ({request.method}): {request.path}")
+                return response
+            return func(request, *args, **kwargs)
+
+        return inner
+
+    return decorator
+
+
+def my_decorator(prefix):
+    def wrapper(func):
+        def inner_wrapper():
+            print(f"{prefix}: Something is happening before the function is called.")
+            func()
+            print(f"{prefix}: Something is happening after the function is called.")
+
+        return inner_wrapper
+
+    return wrapper
 
 
 def test_multiprocessing():

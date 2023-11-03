@@ -5,10 +5,9 @@ import os
 import random
 from functools import reduce, wraps, partial
 
-from django.core.serializers import serialize
 from django.db import transaction, connection
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponse
+from django.http import JsonResponse, HttpResponseNotAllowed
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -18,35 +17,57 @@ from rest_framework.viewsets import ModelViewSet
 
 from testApp.models import TestModel, TestSubModel
 from testApp.serializers import TestModelSerializer, TestSubModelSerializer
-from testApp.test_functions import test_multiprocessing
+import unittest
+import requests
+
+from testApp.test_functions import my_decorator
 
 
-def custom_http_methods(request_method_list):
-    def decorator(func):
-        @wraps(func)
-        def inner(request, *args, **kwargs):
-            if request.method not in request_method_list:
-                response = HttpResponseNotAllowed(request_method_list)
-                # You can customize the logging or any other behavior here
-                print(f"Method Not Allowed ({request.method}): {request.path}")
-                return response
-            return func(request, *args, **kwargs)
+class TestAPIRequests(unittest.TestCase):
+    def make_api_request(self, method='GET'):
+        url = 'http://127.0.0.1:8000/docs'
+        response = requests.request(method, url)
+        return response
 
-        return inner
+    def test_successful_request(self):
+        response = self.make_api_request()
+        self.assertEqual(response.status_code, 200)
 
-    return decorator
+    def test_invalid_method(self):
+        response = self.make_api_request(method='POST')
+        self.assertEqual(response.status_code, 405)
 
 
-def my_decorator(prefix):
-    def wrapper(func):
-        def inner_wrapper():
-            print(f"{prefix}: Something is happening before the function is called.")
-            func()
-            print(f"{prefix}: Something is happening after the function is called.")
+def run_test_api_requests():
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestAPIRequests)
+    # Run the entire test suite using TextTestRunner
+    unittest.TextTestRunner().run(suite)
 
-        return inner_wrapper
 
-    return wrapper
+# celery_example.py
+# celery_example.py
+# celery_example.py
+
+from celery import Celery
+import time
+
+
+class CeleryMath:
+    def __init__(self, broker_url='pyamqp://guest:guest@localhost//', app_name='celery_example'):
+        self.celery = Celery(app_name, broker=broker_url)
+        self.celery.task(bind=True)(self.MathTask.run)
+
+    class MathTask:
+        @staticmethod
+        def run(x, y):
+            print(f"Adding {x} + {y}")
+            time.sleep(5)  # Simulating a time-consuming task
+            return x + y
+
+    def run_task(self, x, y):
+        result = self.celery.send_task('celery_example.CeleryMath.MathTask.run', args=[x, y])
+        print("Task enqueued, waiting for result...")
+        return result.get()
 
 
 @my_decorator("INFO")
@@ -264,46 +285,25 @@ def test_api(request):
         # for i, val in enumerate(demo_list, start=2):
         #     print(i, val)
 
-        obj = TestModel()
+        obj = TestModel.objects.get(id=1)
         class_name_from_obj = obj.__class__.__name__
         class_name = TestModel.__name__
         print(class_name, class_name_from_obj)  # class ismi
         print(__name__)  # modül ismi
+        print(obj)  # return __str__ magic function
+
+        # Call run_test_api_requests to execute a specific test method
+        # run_test_api_requests()
+
+        # Example usage celery:
+        # celery_math = CeleryMath()
+        # result = celery_math.run_task(4, 4)
+        # print(f"Result: {result}")
 
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
     else:
         raise ValueError('Method not allowed.')
-
-
-"""Python Global Interpreter Lock (GIL) Global Yorumlayıcı Kilidi",
-Python dilinin referans uygulaması olan CPython'da bulunan bir kilittir. 
-GIL, aynı anda birden fazla yerel iş parçacığının Python bytecod'larını çalıştırmasını önleyen bir kilittir. Bu 
-kilitleme, CPython'un bellek yönetimi konusunda iş parçacıkları arasında güvenli olmadığı için gereklidir. CPython, 
-Python programlama dilinin referans uygulamasıdır. Python dilinin tasarımını ve standart kütüphanesini belirleyen ve 
-geliştiren uygulamadır. "C" harfi, CPython'ın Python yorumlayıcısının büyük ölçüde C programlama diliyle yazıldığı 
-anlamına gelir."""
-
-"""The GIL is a mutex (short for mutual exclusion) that protects access to Python objects, preventing multiple native 
-threads from executing Python bytecodes at once.
-Birden fazla yerel iş parçacığın Python bayt kodlarını çalıştırmasını engelleyen bir mekanizmadır."""
-"""GIL, tek bir iş parçacığı üzerindeki işlemleri sıralı hale getirir, bu da bazı çoklu çekirdekli sistemlerde 
-performans sorunlarına yol açabilir. Ancak, tek iş parçacığı üzerindeki işlemleri basitleştirir ve bu da CPython'ı 
-birçok durumda yeterince hızlı yapar. GIL'in devam eden kullanımı, performans ve uyumluluk arasında bir denge kurma 
-çabasının bir sonucu olarak görülebilir."""
-
-"""CPython'ın Garbage Collector'ı, bellekte kullanılmayan nesneleri otomatik olarak tanımlayıp temizleyen bir 
-mekanizmadır. Döngüsel referanslar bazen temizlenmez ve bellekte kalabilir. 3.7 den sonra iyileştirme yapıldı."""
-
-"""PEP 8, Python Enhancement Proposal 8'in kısaltmasıdır. Python programlama dilinde kod yazımı için belirlenmiş bir 
-stil rehberidir."""
-
-"""CamelCase: myVariableName
-snake_case: my_variable_name"""
-
-"""python -m venv venv
- venv\Scripts\activate
- venv/bin/activate"""
 
 
 def example_view(request):
@@ -318,6 +318,10 @@ def example_view(request):
     }
 
     return render(request, 'example_template.html', context)
+
+
+def docs(request):
+    return render(request, 'docs.html')
 
 
 @require_http_methods(['GET', 'OPTIONS'])

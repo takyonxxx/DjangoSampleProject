@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python and Software Principles</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            margin: 20px;
+            line-height: 1.6;
+        }
+
+        h2 {
+            color: #007bff;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        strong {
+            color: #28a745;
+        }
+
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        /* Add styles for better readability of the principles */
+        .principle {
+            margin-bottom: 20px;
+            border-left: 3px solid #17a2b8;
+            padding-left: 10px;
+        }
+
+        /* Differentiate SOLID principles for Python and English versions */
+        .python-version,
+        .english-version {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h2>Python Global Interpreter Lock (GIL)</h2>
+    <p>"Python Global Interpreter Lock (GIL), Python's reference implementation CPython, is a mutex that protects access to Python objects, preventing multiple native threads from executing Python bytecodes at once. This lock is necessary because CPython is not thread-safe in terms of memory management between threads. CPython is the reference implementation of the Python programming language, determining and developing the language's design and standard library. The 'C' in CPython signifies that the Python interpreter is largely written in the C programming language."</p>
+
+    <h2>The GIL Mechanism</h2>
+    <p>The GIL mechanism sequentially orders operations on a single thread, which can lead to performance issues on some multi-core systems. However, it simplifies operations on a single thread, making CPython fast enough in many cases. The continued use of the GIL can be seen as a result of balancing performance and compatibility.</p>
+
+    <h2>CPython Garbage Collector</h2>
+    <p>CPython's Garbage Collector is a mechanism that automatically identifies and cleans up unused objects in memory. Circular references are sometimes not cleaned and can persist in memory. Improvements were made after version 3.7.</p>
+
+    <h2>PEP 8</h2>
+    <p>PEP 8, short for Python Enhancement Proposal 8, is a style guide for code writing in the Python programming language.</p>
+
+    <h2>Naming Conventions</h2>
+    <p>CamelCase: myVariableName<br>snake_case: my_variable_name</p>
+
+    <h2>Virtual Environment Commands</h2>
+    <pre>
+        python -m venv venv
+        venv\Scripts\activate
+        venv/bin/activate
+    </pre>
+
+
+    <h2>SOLID represents a set of five design principles for writing maintainable and scalable software.</h2>
+    <h2>SOLID, yazılırken sürdürülebilir ve ölçeklenebilir yazılım ilkelerini temsil eder.</h2>
+    <h2 class="python-version">SOLID Principles (Turkish Version)</h2>
+    <div class="principle">
+        <strong>S - Tek Sorumluluk Prensibi (SRP):</strong> Bu prensip, bir sınıfın yalnızca bir değişiklik nedenine sahip olması gerektiğini belirtir, yani yalnızca bir sorumluluğu olmalıdır. Bir sınıfın birden fazla sorumluluğu varsa, anlamak, sürdürmek ve genişletmek daha zor hale gelir.
+    </div>
+    <div class="principle">
+        <strong>O - Açık/Kapalı Prensibi (OCP):</strong> Açık/Kapalı Prensibi, yazılım varlıklarının genişletilmeye açık ancak değiştirilmeye kapalı olması gerektiğini önerir. Başka bir deyişle, mevcut kodu değiştirmeden yeni özellikler veya bileşenler ekleyebilmelisiniz.
+    </div>
+    <div class="principle">
+        <strong>L - Liskov Yerine Koyma Prensibi (LSP):</strong> Bu prensip, bir üst sınıfın nesnelerinin, bir alt sınıfın nesneleriyle değiştirilebilmesi gerektiğini vurgular. Basit bir ifadeyle, bir sınıf başka bir sınıfın alt sınıfıysa, onunla sorunsuz bir şekilde değiştirilebilmelidir.
+    </div>
+    <div class="principle">
+        <strong>I - Arayüz Ayırma Prensibi (ISP):</strong> ISP, bir sınıfın kullanmadığı arayüzleri uygulamaya zorlanmaması gerektiğini söyler. Diğer bir deyişle, büyük ve genel bir arayüz yerine birden çok küçük, özgün arayüzün olması daha iyidir.
+    </div>
+    <div class="principle">
+        <strong>D - Bağımlılık Tersine Çevirme Prensibi (DIP):</strong> Bu prensip, yüksek seviye modüllerin düşük seviye modüllere bağlı olmaması gerektiğini, ancak her ikisinin de soyutlamalara bağlı olması gerektiğini savunur. Ayrıca soyutlamaların ayrıntılara bağlı olmaması gerektiği fikrini getirir.
+    </div>
+
+    <h2 class="english-version">SOLID Principles (English Version)</h2>
+    <div class="principle">
+        <strong>S - Single Responsibility Principle (SRP):</strong> This principle states that a class should have only one reason to change, meaning it should have only one responsibility. If a class has more than one responsibility, it becomes more difficult to understand, maintain, and extend.
+    </div>
+    <div class="principle">
+        <strong>O - Open/Closed Principle (OCP):</strong> The Open/Closed Principle suggests that software entities should be open for extension but closed for modification. In other words, you should be able to add new features or components without altering the existing code.
+    </div>
+    <div class="principle">
+        <strong>L - Liskov Substitution Principle (LSP):</strong> This principle emphasizes that objects of a superclass should be able to be replaced with objects of a subclass without affecting the correctness of the program. In simpler terms, if a class is a subclass of another class, it should be able to be used interchangeably with its superclass without causing issues.
+    </div>
+    <div class="principle">
+        <strong>I - Interface Segregation Principle (ISP):</strong> ISP advises that a class should not be forced to implement interfaces it does not use. In other words, it's better to have multiple small, specific interfaces rather than a large, general one.
+    </div>
+    <div class="principle">
+        <strong>D - Dependency Inversion Principle (DIP):</strong> This principle promotes the idea that high-level modules (e.g., business logic) should not depend on low-level modules (e.g., database access), but both should depend on abstractions (e.g., interfaces). It also introduces the concept that abstractions should not depend on details; details should depend on abstractions.
+    </div>
+    <h2>Data Middleware</h2>
+    <p>Data middleware typically refers to software that facilitates communication and data exchange between different applications or systems. It acts as a bridge, allowing data to flow smoothly between disparate systems, databases, or software components. This can be crucial in environments where various applications need to work together and share information.</p>
+
+    <h2>Veri Ara Katmanı</h2>
+    <p>Veri ara katmanı genellikle farklı uygulamalar veya sistemler arasında iletişimi ve veri alışverişini kolaylaştıran yazılımları ifade eder. Bu, verinin farklı sistemler, veritabanları veya yazılım bileşenleri arasında sorunsuz bir şekilde akmasına izin veren bir köprü görevi görür. Bu, çeşitli uygulamaların bir araya gelip bilgi paylaşması gereken ortamlarda kritik olabilir.</p>
+
+
+</body>
+
+</html>

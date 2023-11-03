@@ -11,3 +11,5 @@ wheel==0.38.4
 pandas==2.1.1
 scikit-learn==1.3.2
 requests
+celery
+redis

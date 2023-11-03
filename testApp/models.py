@@ -15,11 +15,11 @@ class TestModel(models.Model):
     sub_model = models.ForeignKey(TestSubModel, related_name='test_models',
                                   null=True, blank=True, on_delete=models.SET_NULL)
 
-    """on_delete=models.CASCADE; 
-    TestSubModel nesnesi silindiğinde, ona bağlı olan tüm TestModel örnekleri otomatik olarak silinecektir."""
-
     class Meta:
         db_table = 'tbl_test_model'
+
+    def __str__(self):
+        return f"{self.name} ({self.age} years old)"
 
 
 # Base Class

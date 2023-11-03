@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path, include
 
 from testApp import views
-from testApp.views import example_view
+from testApp.views import example_view, docs
 
 urlpatterns = [
     path('test_api/', views.test_api, name='test_api'),
@@ -28,5 +28,5 @@ urlpatterns = [
     path('test_models_api/<int:pk>/', views.TestApiViewSet.as_view(
         {'put': 'update', 'delete': 'destroy', 'get': 'retrieve'}),
          name='test_models_update_delete'),
-    path('example/', example_view, name='example_view'),
+    path('docs/', docs, name='docs'),
 ]
