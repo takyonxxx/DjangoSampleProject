@@ -70,6 +70,25 @@ class CeleryMath:
         return result.get()
 
 
+def custom_exception_decorator(func):
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except Exception as e:
+            print(f"Exception caught: {e}")
+            # You can add custom handling or logging here
+        else:
+            return result
+
+    return wrapper
+
+
+@custom_exception_decorator
+def exception_function(x, y):
+    result = x / y
+    return result
+
+
 @my_decorator("INFO")
 def say_hello():
     print("Hello!")
@@ -299,6 +318,28 @@ def test_api(request):
         # celery_math = CeleryMath()
         # result = celery_math.run_task(4, 4)
         # print(f"Result: {result}")
+
+        result = exception_function(10, 0)
+
+        class MyBaseClass:
+            instance = None
+
+            def __init__(self, *args, **kwargs):
+                self.name = kwargs.get('name', None)
+                self.instance = kwargs.get('instance', None)
+                self.args = args
+                self.kwargs = kwargs
+
+        class MyChildClass(MyBaseClass):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                # Additional initialization for the child class if needed
+
+        base_instance = MyBaseClass(instance='Base_Instance', age=25)
+        print("Instance:", base_instance.instance)
+
+        child_instance = MyChildClass(name='Alice', age=30)
+        print("Instance:", child_instance.instance)
 
         # Return the serialized data as JsonResponse
         return JsonResponse({'result': form_data}, safe=False)
