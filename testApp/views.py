@@ -333,7 +333,7 @@ def test_api(request):
         class MyChildClass(MyBaseClass):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                # Additional initialization for the child class if needed
+                # Additional initialization for the child class if needed ...
 
         base_instance = MyBaseClass(instance='Base_Instance', age=25)
         print("Instance:", base_instance.instance)
