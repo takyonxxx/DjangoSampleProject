@@ -13,10 +13,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from testApp.models import Customer
+from testApp.models import Customer, Product
 from testApp.serializers import CustomerSerializer
 from .models import Order
 from .serializers import OrderSerializer

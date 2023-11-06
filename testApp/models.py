@@ -46,7 +46,7 @@ class Customer(models.Model):
 
 class Order(AbstractOrder):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product, through='OrderItem')
+    products = models.ManyToManyField(Product)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
@@ -56,7 +56,7 @@ class Order(AbstractOrder):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(null=True, blank=True)
+    quantity = models.PositiveIntegerField()
 
     class Meta:
         db_table = 'tbl_order_item'
