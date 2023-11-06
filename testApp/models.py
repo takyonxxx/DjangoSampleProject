@@ -1,60 +1,74 @@
-from django.db import models, transaction
+from django.db import models
 
 
-class TestSubModel(models.Model):
-    name = models.CharField(max_length=255)
-
-    class Meta:
-        db_table = 'tbl_test_sub_model'
-
-
-class TestModel(models.Model):
-    name = models.CharField(max_length=255)
-    age = models.IntegerField(null=True, blank=True)
-    #  many-to-one relationship
-    sub_model = models.ForeignKey(TestSubModel, related_name='test_models',
-                                  null=True, blank=True, on_delete=models.SET_NULL)
-
-    class Meta:
-        db_table = 'tbl_test_model'
-
-    def __str__(self):
-        return f"{self.name} ({self.age} years old)"
-
-
-# Base Class
-class Person(models.Model):
-    name = models.CharField(max_length=100)
-    age = models.IntegerField()
-
-
-# Multi-table Inheritance
-class Employee(Person):
-    position = models.CharField(max_length=100)
-
-
-# Proxy Model
-class ManagerProxy(Person):
-    class Meta:
-        proxy = True
-
-
-# Abstract Base Class
-class CommonFields(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class AbstractOrder(models.Model):
+    order_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
 
 
-# Model 1
-class Article(CommonFields):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'tbl_category'
 
 
-# Model 2
-class Comment(CommonFields):
-    author = models.CharField(max_length=50)
-    text = models.TextField()
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'tbl_product'
+
+
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=15)
+
+    class Meta:
+        db_table = 'tbl_customer'
+
+    def __str__(self):
+        return self.name
+
+
+class Order(AbstractOrder):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product, through='OrderItem')
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'tbl_order'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    def save(self, *args, **kwargs):
+        # Decrease product stock when an order item is saved
+        super().save(*args, **kwargs)
+        self.product.stock -= self.quantity
+        self.product.save()
+
+    class Meta:
+        db_table = 'tbl_order_item'
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
+
+
+class VIPCustomer(Customer):
+    class Meta:
+        proxy = True
+
+    def is_vip(self):
+        # Add custom methods for VIP customers
+        return True

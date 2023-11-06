@@ -1,16 +1,9 @@
 from django.contrib import admin
-from .models import TestSubModel, TestModel
+from .models import Category, Product, Customer, Order, OrderItem
 
-
-class TestSubModelAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-
-
-admin.site.register(TestSubModel, TestSubModelAdmin)
-
-
-class TestModelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'age', 'sub_model')
-
-
-admin.site.register(TestModel, TestModelAdmin)
+# Register your models here
+admin.site.register(Category)
+admin.site.register(Product)
+admin.site.register(Customer)
+admin.site.register(Order)
+admin.site.register(OrderItem)

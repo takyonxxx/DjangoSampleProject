@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'testApp.apps.TestappConfig'
+    'testApp'
 ]
 
 MIDDLEWARE = [
@@ -75,15 +75,7 @@ WSGI_APPLICATION = 'djangoTest.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test.db.sqlite3',
-    },
-    'users_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'users.db.sqlite3',
-    },
-    'test_db': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'test.db.sqlite3',
+        'NAME': BASE_DIR / 'orders.db.sqlite3',
     },
 }
 
@@ -142,7 +134,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DATABASE_ROUTERS = ['routers.db_routers.AuthRouter', 'routers.db_routers.TestApp']
 #
 #
 # # Use SMTP for sending emails

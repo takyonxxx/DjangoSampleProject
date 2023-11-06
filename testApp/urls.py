@@ -13,20 +13,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path
 
 from testApp import views
-from testApp.views import example_view, docs
+from testApp.views import docs
 
 urlpatterns = [
     path('test_api/', views.test_api, name='test_api'),
     path('test_db/', views.test_db, name='test_db'),
-    path('get_test_models/', views.get_test_models, name='get_test_models'),
-    path('get_test_model_by_sub_model_name/', views.get_test_model_by_sub_model_name,
-         name='get_test_model_by_sub_model_name'),
-    path('test_models_api/', views.TestApiViewSet.as_view({'post': 'create'}), name='test_models_create'),
-    path('test_models_api/<int:pk>/', views.TestApiViewSet.as_view(
+    path('get_orders/', views.get_orders, name='get_orders'),
+    path('orders_api/', views.OrderViewSet.as_view({'post': 'create'}), name='orders_api'),
+    path('orders_api/<int:pk>/', views.OrderViewSet.as_view(
         {'put': 'update', 'delete': 'destroy', 'get': 'retrieve'}),
-         name='test_models_update_delete'),
+         name='update_orders_api'),
     path('docs/', docs, name='docs'),
 ]

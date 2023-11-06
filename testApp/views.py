@@ -13,13 +13,13 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 
-from testApp.models import TestModel, TestSubModel
-from testApp.serializers import TestModelSerializer, TestSubModelSerializer
-from testApp.test_functions import custom_exception_decorator
+from testApp.models import Customer
+from testApp.serializers import CustomerSerializer
+from .models import Order
+from .serializers import OrderSerializer
 
 
 class TestAPIRequests(unittest.TestCase):
@@ -90,48 +90,20 @@ def test_db(request):
 
     if request.method == 'POST':
         with transaction.atomic(using='test_db'):
-            posts = TestModel.objects.select_for_update(). \
+            customers = Customer.objects.select_for_update(). \
                 filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
-            sub_models = TestSubModel.objects.all()
-
-            # Fetch a queryset of TestModel instances with related TestSubModel instances
-            test_models_with_related = TestModel.objects.select_related('sub_model').filter(name__startswith='Türk')
-
-            # Now you can iterate over the queryset and access related objects without additional queries
-            for test_model_instance in test_models_with_related:
-                print("TestModel Name:", test_model_instance.name)
-                print("TestModel Age:", test_model_instance.age)
-
-                # Accessing the related TestSubModel instance without triggering additional queries
-                if test_model_instance.sub_model:
-                    print("Related TestSubModel Name:", test_model_instance.sub_model.name)
-                else:
-                    print("No related TestSubModel")
-
-            for post in posts:
-                if post.name.startswith('Türk'):
-                    post.name = 'Gökhan Biliyor'
-                    post.age = 47
-                    post.sub_model = sub_models.get(id=2)
-                elif post.name.startswith('Gök'):
-                    post.name = 'Türkay Biliyor'
-                    post.age = 49
-                    post.sub_model = sub_models.get(id=1)
-                post.save()
-                # Serialize each post separately
 
             # Serialize all posts at once
-            serialized_posts = TestModelSerializer(posts, many=True).data
-
-            _q = posts.query
+            serialized_customers = CustomerSerializer(customers, many=True).data
+            _q = customers.query
             _c = connection.queries
-        if serialized_posts:
+        if serialized_customers:
             partial_email_user = partial(email_user, "turkaybiliyor@hotmail.com")
             transaction.on_commit(partial_email_user)
-            for item in serialized_posts:
+            for item in serialized_customers:
                 # Modify the additional_info field for each object
                 item['additional_info'] = "Mail has been sent to turkaybiliyor@hotmail.com."
-            return JsonResponse(serialized_posts, safe=False)  # non dict object --> safe=False
+            return JsonResponse(serialized_customers, safe=False)  # non dict object --> safe=False
         else:
             return JsonResponse({'error': 'No data to serialize.'}, status=400)
     else:
@@ -288,9 +260,9 @@ def test_api(request):
         are_disjoint = my_set.isdisjoint({11, 12, 13})
         print("Are my_set and {11, 12, 13} disjoint?", are_disjoint)
 
-        obj = TestModel.objects.get(id=1)
+        obj = Customer.objects.get(id=1)
         class_name_from_obj = obj.__class__.__name__
-        class_name = TestModel.__name__
+        class_name = Customer.__name__
         print(class_name, class_name_from_obj)  # class ismi
         print(__name__)  # modül ismi
         print(obj)  # return __str__ magic function
@@ -332,76 +304,19 @@ def docs(request):
 
 @require_http_methods(['GET', 'OPTIONS'])
 @csrf_exempt
-def get_test_models(request):
-    def test_generator(n):
-
-        # initialize counter
-        value = 0
-
-        # loop until counter is less than n
-        while value < n:
-            # produce the current value of the counter
-            yield value
-
-            # increment the counter
-            value += 1
-
+def get_orders(request):
     try:
         if request.method == 'GET':
-            filtered_test_models = TestModel.objects.using('test_db').all()
-
-            # Serialize the queryset to JSON
-            serialized_data = [
-                {'id': model.id, 'name': model.name, 'age': model.age, 'sub_model_name': model.sub_model.name}
-                for model in filtered_test_models
-            ]
-
-            input_list = [1, 2, 3, 4, 5]
-            output_list = list(map(lambda x: x ** 2, input_list))
-            print(output_list)
-
-            output_list = list(filter(lambda x: (x > 0 and x % 2 == 0), input_list))
-            print(output_list)
+            # filtered_test_models = Customer.objects.using('test_db').all()
+            #
+            # # Serialize the queryset to JSON
+            # serialized_data = [
+            #     {'id': model.id, 'name': model.name, 'age': model.age, 'sub_model_name': model.sub_model.name}
+            #     for model in filtered_test_models
+            # ]
 
             # Return the serialized data as JsonResponse
-            return JsonResponse({'test_models': serialized_data}, safe=False)
-        else:
-            raise ValueError('Method not allowed.')
-
-    except json.JSONDecodeError:
-        response_data = {
-            'success': False,
-            'message': 'Invalid JSON format in the request body.',
-        }
-        return JsonResponse(response_data, status=400)
-
-    except ValueError as e:
-        response_data = {
-            'success': False,
-            'message': str(e),
-        }
-        return JsonResponse(response_data, status=405)
-
-
-@require_http_methods(['GET', 'OPTIONS'])
-@csrf_exempt
-def get_test_model_by_sub_model_name(request):
-    try:
-        data = json.loads(request.body.decode('utf-8'))
-        sub_model_name = data.get('sub_model_name', '')
-
-        if request.method == 'GET':
-            filtered_test_models = TestModel.objects.using('test_db').filter(sub_model__name=sub_model_name)
-
-            # Serialize the queryset to JSON
-            serialized_data = [
-                {'id': model.id, 'name': model.name, 'age': model.age,
-                 'sub_model_id': model.sub_model.id, 'sub_model_name': model.sub_model.name}
-                for model in filtered_test_models
-            ]
-
-            # Return the serialized data as JsonResponse
-            return JsonResponse({'test_models': serialized_data}, safe=False)
+            return JsonResponse({'test_models': None}, safe=False)
         else:
             raise ValueError('Method not allowed.')
 
@@ -421,81 +336,26 @@ def get_test_model_by_sub_model_name(request):
 
 
 # @transaction.atomic()
-class TestApiViewSet(ModelViewSet):
-    queryset = TestModel.objects.using('test_db').all()
-    serializer_class = TestModelSerializer
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
 
     def create(self, request, *args, **kwargs):
-        with transaction.atomic(using='test_db'):
-            # Check if test_model with the given name already exists
-            test_model_name = request.data.get('test_model')['name']
-            existing_test_model = TestModel.objects.filter(name=test_model_name).first()
-
-            if existing_test_model:
-                # If it exists, return a response indicating it already exists
-                return Response({
-                    'message': f'Test model with name "{test_model_name}" already exists.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            test_sub_model_serializer = TestSubModelSerializer(data=request.data.get('test_sub_model'))
-            test_sub_model_serializer.is_valid(raise_exception=True)
-            test_sub_model = test_sub_model_serializer.save()
-
-            test_model_data = {
-                'name': request.data.get('test_model')['name'],
-                'age': request.data.get('test_model')['age'],
-                'sub_model': test_sub_model.id
-            }
-
-            test_model_serializer = TestModelSerializer(data=test_model_data)
-            test_model_serializer.is_valid(raise_exception=True)
-            test_model_serializer.save()
-
-            return Response({
-                'test_model': test_model_serializer.data,
-                'test_sub_model': test_sub_model_serializer.data
-            }, status=status.HTTP_201_CREATED)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=201, headers=headers)
 
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
         instance = self.get_object()
-
-        with transaction.atomic(using='test_db'):
-            test_model_serializer = TestModelSerializer(instance, data=request.data.get('test_model'), partial=True)
-            test_model_serializer.is_valid(raise_exception=True)
-            test_model_serializer.save()
-
-            test_sub_model_data = request.data.get('test_sub_model')
-            if test_sub_model_data:
-                test_sub_model_instance = instance.sub_model
-                test_sub_model_serializer = TestSubModelSerializer(test_sub_model_instance, data=test_sub_model_data,
-                                                                   partial=True)
-                test_sub_model_serializer.is_valid(raise_exception=True)
-                test_sub_model_serializer.save()
-
-        return Response({
-            'test_model': test_model_serializer.data,
-            'test_sub_model': test_sub_model_serializer.data if test_sub_model_data else None
-        })
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-
-        with transaction.atomic(using='test_db'):
-            test_sub_model_instance = instance.sub_model
-            instance.delete()
-
-            if test_sub_model_instance:
-                test_sub_model_instance.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-
-        test_model_serializer = TestModelSerializer(instance)
-        test_sub_model_serializer = TestSubModelSerializer(instance.sub_model)
-
-        return Response({
-            'test_model': test_model_serializer.data,
-            'test_sub_model': test_sub_model_serializer.data
-        })
+        self.perform_destroy(instance)
+        return Response(status=204)
