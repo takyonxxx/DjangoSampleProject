@@ -89,7 +89,7 @@ def test_db(request):
         print(f"Dear {email}, Thank You.")
 
     if request.method == 'POST':
-        with transaction.atomic(using='test_db'):
+        with transaction.atomic():
             customers = Customer.objects.select_for_update(). \
                 filter(Q(name__startswith='Türk') | Q(name__startswith='Gök'))
 
@@ -284,78 +284,10 @@ def test_api(request):
         raise ValueError('Method not allowed.')
 
 
-def example_view(request):
-    username = 'John Doe'
-    age = 30
-    hobbies = ['Reading', 'Coding', 'Hiking']
-
-    context = {
-        'username': username,
-        'age': age,
-        'hobbies': hobbies,
-    }
-
-    return render(request, 'example_template.html', context)
-
-
 def docs(request):
     return render(request, 'docs.html')
 
 
-@require_http_methods(['GET', 'OPTIONS'])
-@csrf_exempt
-def get_orders(request):
-    try:
-        if request.method == 'GET':
-            # filtered_test_models = Customer.objects.using('test_db').all()
-            #
-            # # Serialize the queryset to JSON
-            # serialized_data = [
-            #     {'id': model.id, 'name': model.name, 'age': model.age, 'sub_model_name': model.sub_model.name}
-            #     for model in filtered_test_models
-            # ]
-
-            # Return the serialized data as JsonResponse
-            return JsonResponse({'test_models': None}, safe=False)
-        else:
-            raise ValueError('Method not allowed.')
-
-    except json.JSONDecodeError:
-        response_data = {
-            'success': False,
-            'message': 'Invalid JSON format in the request body.',
-        }
-        return JsonResponse(response_data, status=400)
-
-    except ValueError as e:
-        response_data = {
-            'success': False,
-            'message': str(e),
-        }
-        return JsonResponse(response_data, status=405)
-
-
-# @transaction.atomic()
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=201, headers=headers)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=204)

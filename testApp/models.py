@@ -15,6 +15,9 @@ class Category(models.Model):
     class Meta:
         db_table = 'tbl_category'
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
@@ -24,6 +27,9 @@ class Product(models.Model):
 
     class Meta:
         db_table = 'tbl_product'
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class Customer(models.Model):
@@ -41,7 +47,7 @@ class Customer(models.Model):
 class Order(AbstractOrder):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     products = models.ManyToManyField(Product, through='OrderItem')
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         db_table = 'tbl_order'
@@ -50,13 +56,7 @@ class Order(AbstractOrder):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
-
-    def save(self, *args, **kwargs):
-        # Decrease product stock when an order item is saved
-        super().save(*args, **kwargs)
-        self.product.stock -= self.quantity
-        self.product.save()
+    quantity = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'tbl_order_item'
@@ -65,10 +65,4 @@ class OrderItem(models.Model):
         return f"{self.quantity} x {self.product.name}"
 
 
-class VIPCustomer(Customer):
-    class Meta:
-        proxy = True
 
-    def is_vip(self):
-        # Add custom methods for VIP customers
-        return True

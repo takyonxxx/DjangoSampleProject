@@ -21,8 +21,7 @@ from testApp.views import docs
 urlpatterns = [
     path('test_api/', views.test_api, name='test_api'),
     path('test_db/', views.test_db, name='test_db'),
-    path('get_orders/', views.get_orders, name='get_orders'),
-    path('orders_api/', views.OrderViewSet.as_view({'post': 'create'}), name='orders_api'),
+    path('orders_api/', views.OrderViewSet.as_view({'post': 'create', 'get': 'list'}), name='orders_api'),
     path('orders_api/<int:pk>/', views.OrderViewSet.as_view(
         {'put': 'update', 'delete': 'destroy', 'get': 'retrieve'}),
          name='update_orders_api'),
