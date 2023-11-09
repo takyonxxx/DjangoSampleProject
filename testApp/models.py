@@ -46,7 +46,7 @@ class Customer(models.Model):
 
 class Order(AbstractOrder):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product)
+    products = models.ManyToManyField(Product, related_name='order')
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
@@ -63,6 +63,3 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
-
-
-

@@ -22,9 +22,14 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    stock = serializers.SerializerMethodField()
+
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']  # '__all__'
+        fields = ['product', 'quantity', 'stock']
+
+    def get_stock(self, obj):
+        return obj.product.stock
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -41,6 +46,8 @@ class OrderSerializer(serializers.ModelSerializer):
         # Create the order instance without the 'products' field
         order = Order.objects.create(**validated_data)
 
+        total_price = 0
+
         # Now, create the OrderItem instances and associate them with the order
         for product_data in products_data:
             product = product_data['product']
@@ -48,7 +55,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
             # Create OrderItem instance and associate it with the order
             OrderItem.objects.create(order=order, product=product, quantity=quantity)
+            total_price += product.price * quantity
 
+        order.total_price = total_price
         return order
 
     def update(self, instance, validated_data):
@@ -59,8 +68,13 @@ class OrderSerializer(serializers.ModelSerializer):
 
         # Update or create OrderItem instances
         products_data = validated_data.get('products', [])
+        products_data_list = [
+            item['product'] for item in products_data
+        ]
+
+        total_price = 0
         for product_data in products_data:
-            product_id = product_data['product']
+            product_id = product_data['product'].id
             quantity = product_data['quantity']
 
             # Try to get existing OrderItem or create a new one
@@ -70,7 +84,11 @@ class OrderSerializer(serializers.ModelSerializer):
             if not created:
                 # If the OrderItem already exists, update the quantity
                 order_item.quantity = quantity
+                total_price += product_data['product'].price * quantity
                 order_item.save()
+
+        instance.total_price = total_price
+        OrderItem.objects.filter(order=instance).exclude(product__in=products_data_list).delete()
 
         return instance
 
