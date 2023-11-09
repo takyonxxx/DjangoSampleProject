@@ -39,6 +39,19 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
 
+    def validate(self, data):
+        print(data)
+        if 'products' in data:
+            products = data.get('products', [])
+            for item in products:
+                stock = item['product'].stock
+                quantity = item['quantity']
+                print(stock, quantity)
+                if quantity > stock:
+                    raise serializers.ValidationError("The total quantity of products exceeds the maximum allowed stock"
+                                                      "for this customer.")
+        return data
+
     def create(self, validated_data):
         # Extract and remove the nested 'products' data from the validated data
         products_data = validated_data.pop('products', [])
@@ -55,6 +68,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
             # Create OrderItem instance and associate it with the order
             OrderItem.objects.create(order=order, product=product, quantity=quantity)
+            product.stock -= quantity
+            product.save()
             total_price += product.price * quantity
 
         order.total_price = total_price
@@ -80,11 +95,13 @@ class OrderSerializer(serializers.ModelSerializer):
             # Try to get existing OrderItem or create a new one
             order_item, created = OrderItem.objects.get_or_create(order=instance, product_id=product_id,
                                                                   defaults={'quantity': quantity})
-
             if not created:
-                # If the OrderItem already exists, update the quantity
-                order_item.quantity = quantity
+                # Update the stock level of the product
+                delta = order_item.quantity - quantity
+                product_data['product'].stock += delta
+                product_data['product'].save()
                 total_price += product_data['product'].price * quantity
+                order_item.quantity = quantity
                 order_item.save()
 
         instance.total_price = total_price
@@ -94,6 +111,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def destroy(self, instance):
         # Delete the order and associated OrderItem instances
+        instance.product.stock += instance.quantity
+        instance.product.save()
         instance.products.all().delete()
         instance.delete()
 
