@@ -1,6 +1,7 @@
 from rest_framework import serializers
-
+from django.db import transaction, IntegrityError
 from .models import Category, Product, Customer, Order, OrderItem
+from django.db.models import F
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -40,65 +41,64 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        print(data)
-        if 'products' in data:
-            products = data.get('products', [])
-            for item in products:
-                stock = item['product'].stock
-                quantity = item['quantity']
-                print(stock, quantity)
+        products = data.get('products', [])
+
+        for item in products:
+            stock = item['product'].stock
+            quantity = item['quantity']
+
+            if self.instance:
+                # For updating an existing order
+                if stock == 0:
+                    raise serializers.ValidationError("No stock available.")
                 if quantity > stock:
-                    raise serializers.ValidationError("The total quantity of products exceeds the maximum allowed stock"
-                                                      "for this customer.")
+                    raise serializers.ValidationError("The quantity exceeds the available stock.")
+            else:
+                # For creating a new order
+                if quantity <= 0:
+                    raise serializers.ValidationError("Quantity must be a positive integer.")
+                if quantity > stock:
+                    raise serializers.ValidationError("The quantity exceeds the available stock.")
+
         return data
 
     def create(self, validated_data):
-        # Extract and remove the nested 'products' data from the validated data
         products_data = validated_data.pop('products', [])
-
-        # Create the order instance without the 'products' field
         order = Order.objects.create(**validated_data)
-
         total_price = 0
 
-        # Now, create the OrderItem instances and associate them with the order
-        for product_data in products_data:
-            product = product_data['product']
-            quantity = product_data['quantity']
+        with transaction.atomic():
+            for product_data in products_data:
+                product = product_data['product']
+                quantity = product_data['quantity']
 
-            # Create OrderItem instance and associate it with the order
-            OrderItem.objects.create(order=order, product=product, quantity=quantity)
-            product.stock -= quantity
-            product.save()
-            total_price += product.price * quantity
+                OrderItem.objects.create(order=order, product=product, quantity=quantity)
+                product.stock = F('stock') - quantity
+                product.save()
+                total_price += product.price * quantity
 
         order.total_price = total_price
         return order
 
     def update(self, instance, validated_data):
-        # Update fields of the order instance
         instance.customer = validated_data.get('customer', instance.customer)
         instance.total_price = validated_data.get('total_price', instance.total_price)
         instance.save()
 
-        # Update or create OrderItem instances
         products_data = validated_data.get('products', [])
-        products_data_list = [
-            item['product'] for item in products_data
-        ]
-
+        products_data_list = [item['product'] for item in products_data]
         total_price = 0
-        for product_data in products_data:
-            product_id = product_data['product'].id
-            quantity = product_data['quantity']
 
-            # Try to get existing OrderItem or create a new one
-            order_item, created = OrderItem.objects.get_or_create(order=instance, product_id=product_id,
-                                                                  defaults={'quantity': quantity})
-            if not created:
-                # Update the stock level of the product
-                delta = order_item.quantity - quantity
-                product_data['product'].stock += delta
+        with transaction.atomic():
+            for product_data in products_data:
+                product_id = product_data['product'].id
+                quantity = product_data['quantity']
+
+                order_item, created = OrderItem.objects.get_or_create(
+                    order=instance, product_id=product_id, defaults={'quantity': quantity}
+                )
+
+                product_data['product'].stock = F('stock') - quantity
                 product_data['product'].save()
                 total_price += product_data['product'].price * quantity
                 order_item.quantity = quantity
@@ -110,9 +110,12 @@ class OrderSerializer(serializers.ModelSerializer):
         return instance
 
     def destroy(self, instance):
+        # Loop through order items and update product stock
+        for order_item in instance.products.all():
+            order_item.product.stock += order_item.quantity
+            order_item.product.save()
+
         # Delete the order and associated OrderItem instances
-        instance.product.stock += instance.quantity
-        instance.product.save()
         instance.products.all().delete()
         instance.delete()
 
